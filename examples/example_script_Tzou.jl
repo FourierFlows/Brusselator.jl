@@ -1,5 +1,8 @@
 using Brusselator 
 
+using Plots
+
+using FFTW: irfft
 
 # ## Let's prescibe parameter values and solve the PDE
 #
@@ -46,9 +49,9 @@ nothing # hide
 # problem struct, `prob`, that contains all of the above.
 
 grid = OneDGrid(dev, nx, L)
-params = Params(B, D, E)
-vars = Vars(dev, grid)
-equation = Equation(dev, params, grid)
+params = Brusselator.Params(B, D, E)
+vars = Brusselator.Vars(dev, grid)
+equation = Brusselator.Equation(dev, params, grid)
 
 prob = FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 nothing #hide

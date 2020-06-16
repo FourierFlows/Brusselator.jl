@@ -12,10 +12,11 @@
 
 module Brusselator
 
-using FourierFlows,
-      Plots,
-      Printf,
-      Random
+using Printf,
+      Random,
+      Reexport
+      
+@reexport using FourierFlows
 
 using LinearAlgebra: mul!, ldiv!
 
@@ -103,7 +104,7 @@ function calcN!(N, sol, t, clock, vars, params, grid)
   mul!(vars.vu²h, grid.rfftplan, vars.vu²)
   
   @views @. N[:, 1] = + vars.vu²h - (params.B + 1) * sol[:, 1]    # + v*u² - (B+1) u
-  N[1, 1] += params.E * grid.nx # since fft(constant) = constant * nx
+  N[1, 1] += params.E * grid.nx # note that fft(constant) = constant * nx
   
   @views @. N[:, 2] = - vars.vu²h + params.B * sol[:, 1]          # - v*u² + B*u
     
@@ -124,8 +125,8 @@ function Equation(dev, params, grid::AbstractGrid)
   
   diffusion = @. - grid.kr^2
   
-  @. L[:, 1] = params.D * diffusion  # D ∂²u/∂x² 
-  @. L[:, 2] = diffusion             # ∂²v/∂x²
+  @. L[:, 1] = params.D * diffusion  # D*∂²u/∂x² 
+  @. L[:, 2] = diffusion             #   ∂²v/∂x²
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
