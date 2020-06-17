@@ -8,4 +8,4 @@ Solves the Brusselator equations:
 
 with periodic boundary conditions on u(x, t) and v(x, t).
 
-![](http://users.uoa.gr/~navidcon/brusselator2.gif)
+![](http://users.uoa.gr/~navidcon/brusselator.gif)
