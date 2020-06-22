@@ -22,7 +22,8 @@ using LinearAlgebra: mul!, ldiv!
 
 export
   set_uv!,
-  updatevars!
+  updatevars!,
+  get_righthandside
 
 
 # ## Coding up the equations
@@ -49,7 +50,6 @@ struct Params{T} <: AbstractParams
    D :: T         # D parameter
    E :: T         # E parameter
 end
-nothing #hide
 
 # Now the `Vars` struct that contains all variables used in this problem. For this
 # problem `Vars` includes the represenations of the flow fields in physical space 
@@ -63,7 +63,6 @@ struct Vars{Aphys, Atrans} <: AbstractVars
     vh :: Atrans
   vu²h :: Atrans
 end
-nothing #hide
 
 # A constructor populates empty arrays based on the dimension of the `grid`
 # and then creates `Vars` struct.
@@ -77,7 +76,6 @@ function Vars(::Dev, grid::AbstractGrid) where Dev
   @devzeros Dev Complex{T} grid.nkr uh vh vu²h
   return Vars(u, v, vu², uh, vh, vu²h)
 end
-nothing #hide
 
 # In Fourier space, the 1D linear shallow water dynamics are:
 #
@@ -110,7 +108,6 @@ function calcN!(N, sol, t, clock, vars, params, grid)
     
   return nothing
 end
-nothing #hide
  
 # Next we construct the `Equation` struct:
 
@@ -130,7 +127,6 @@ function Equation(dev, params, grid::AbstractGrid)
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
-nothing #hide
 
 # We now have all necessary building blocks to construct a `FourierFlows.Problem`. 
 # It would be useful, however, to define some more "helper functions". For example,
@@ -151,7 +147,6 @@ function updatevars!(prob)
   ldiv!(vars.v, grid.rfftplan, deepcopy(sol[:, 2])) # use deepcopy() because irfft destroys its input
   return nothing
 end
-nothing #hide
 
 # Another useful function is one that prescribes an initial condition to the state variable `sol`.
 
@@ -175,6 +170,23 @@ function set_uv!(prob, u0, v0)
   updatevars!(prob)
   return nothing
 end
-nothing #hide
+
+"""
+    get_righthandside!(prob)
+Returns the right-hand-side of the equation. In this case, the function returns
+a 2-column array with the time-tendencies for uh and vh.
+"""
+function get_righthandside(prob)
+  
+  vars, params, grid, sol, clock = prob.vars, prob.params, prob.grid, prob.sol, prob.clock
+  
+  L = prob.eqn.L
+  
+  N = zeros(eltype(sol), size(sol))
+  
+  prob.eqn.calcN!(N, sol, clock.t, clock, vars, params, grid)
+    
+  return @. L*sol + N
+end
 
 end # module
