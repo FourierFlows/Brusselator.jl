@@ -189,4 +189,31 @@ function get_righthandside(prob)
   return @. L*sol + N
 end
 
+"""
+    timestep_up_to_t!(prob, t)
+Timesteps the problem u the right-hand-side of the equation. In this case, the function returns
+a 2-column array with the time-tendencies for uh and vh.
+"""
+function timestep_up_to_t(prob, t_final)
+  dt = prob.clock.dt
+  
+  t_initial = prob.clock.t
+  
+  t_final = t
+  
+  nsteps = Int(floor((t_final - t_initial) / dt))
+
+  if nsteps < 0; error("t_final < prob.t"); end
+  
+  stepforward!(prob, nsteps)
+  
+  t_remaining = t_final - t_initial - nsteps*dt
+  
+  prob.clock.dt = t_remaining
+  
+  stepforward!(prob)
+  
+  prob.clock.dt = dt
+end
+
 end # module
