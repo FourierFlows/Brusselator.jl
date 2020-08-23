@@ -45,7 +45,7 @@ export
 
 # First lets construct the `Params` struct that contains all parameters of the problem 
 
-struct Params{T} <: AbstractParams
+mutable struct Params{T} <: AbstractParams
    B :: T         # B parameter
    D :: T         # D parameter
    E :: T         # E parameter
